@@ -15,6 +15,7 @@ export default function socketHandlers(io) {
     socket.on("join-room", async ({ roomId, userId }) => {
       socket.join(roomId);
       socket.userId = userId;
+      socket.roomId = roomId;
       let room = await Room.findOne({ roomId })
         .populate("participants", "fullName _id")
         .populate("admin", "fullName _id"); // <-- populate admin
@@ -91,30 +92,52 @@ export default function socketHandlers(io) {
 
     // Handle disconnect (auto-leave)
     socket.on("disconnect", async () => {
-      setTimeout(async () => {
-        for (const roomId of socket.rooms) {
-          if (roomId !== socket.id && socket.userId) {
-            const stillInRoom = await isUserStillInRoom(roomId, socket.userId);
-            if (!stillInRoom) {
-              let room = await Room.findOne({ roomId });
-              if (room) {
-                room.participants = room.participants.filter(
-                  (id) => id.toString() !== socket.userId
-                );
-                await room.save();
-                // After updating participants array:
-                room = await Room.findOne({ roomId })
-                  .populate("participants", "fullName _id")
-                  .populate("admin", "fullName _id"); // <-- populate admin
-                io.to(roomId).emit("participants-update", {
-                  participants: room.participants,
-                  admin: room.admin, // <-- send admin
-                });
-              }
-            }
+      //   setTimeout(async () => {
+      //     for (const roomId of socket.rooms) {
+      //       if (roomId !== socket.id && socket.userId) {
+      //         const stillInRoom = await isUserStillInRoom(roomId, socket.userId);
+      //         if (!stillInRoom) {
+      //           let room = await Room.findOne({ roomId });
+      //           if (room) {
+      //             room.participants = room.participants.filter(
+      //               (id) => id.toString() !== socket.userId
+      //             );
+      //             await room.save();
+      //             // After updating participants array:
+      //             room = await Room.findOne({ roomId })
+      //               .populate("participants", "fullName _id")
+      //               .populate("admin", "fullName _id"); // <-- populate admin
+      //             io.to(roomId).emit("participants-update", {
+      //               participants: room.participants,
+      //               admin: room.admin, // <-- send admin
+      //             });
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }, 500); // 500ms delay
+      const roomId = socket.roomId;
+      socket.leave(roomId);
+      if (socket.userId) {
+        const stillInRoom = await isUserStillInRoom(roomId, socket.userId);
+        if (!stillInRoom) {
+          let room = await Room.findOne({ roomId });
+          if (room) {
+            room.participants = room.participants.filter(
+              (id) => id.toString() !== socket.userId
+            );
+            await room.save();
+            // After updating participants array:
+            room = await Room.findOne({ roomId })
+              .populate("participants", "fullName _id")
+              .populate("admin", "fullName _id"); // <-- populate admin
+            io.to(roomId).emit("participants-update", {
+              participants: room.participants,
+              admin: room.admin, // <-- send admin
+            });
           }
         }
-      }, 500); // 500ms delay
+      }
     });
   });
 }

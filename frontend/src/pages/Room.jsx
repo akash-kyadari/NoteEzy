@@ -5,7 +5,6 @@ import useAuthStore from "../store/store";
 import useRoomStore from "../store/roomStore";
 import ParticipantsSidebar from "../components/ParticipantsSidebar";
 import NotesEditor from "../components/NotesEditor";
-import GroupChat from "../components/GroupChat";
 
 const Room = () => {
   const { roomId } = useParams();
@@ -26,13 +25,13 @@ const Room = () => {
 
     socket.on("room-data", ({ participants, admin, currNotes }) => {
       setParticipants(participants);
-      useRoomStore.getState().setAdmin(admin); // <-- set admin in store
+      useRoomStore.getState().setAdmin(admin);
       setNote(currNotes || "");
     });
 
     socket.on("participants-update", ({ participants, admin }) => {
       setParticipants(participants);
-      useRoomStore.getState().setAdmin(admin); // <-- set admin in store
+      useRoomStore.getState().setAdmin(admin);
     });
 
     socket.on("receive-note", (content) => {
@@ -56,10 +55,17 @@ const Room = () => {
   );
 
   return (
-    <div className="flex h-screen">
-      <ParticipantsSidebar />
-      <NotesEditor note={note} onNoteChange={handleNoteChange} />
-      <GroupChat />
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 flex items-center justify-center py-6">
+      <div className="flex flex-col md:flex-row w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-2xl shadow-2xl overflow-hidden bg-white border border-gray-200">
+        {/* Sidebar */}
+        <aside className="w-full md:w-[36%] min-w-0 max-w-full md:min-w-[280px] md:max-w-[400px] bg-white flex flex-col border-b md:border-b-0 md:border-r border-gray-200">
+          <ParticipantsSidebar />
+        </aside>
+        {/* Notes */}
+        <main className="flex-1 bg-gray-50 flex flex-col">
+          <NotesEditor note={note} onNoteChange={handleNoteChange} />
+        </main>
+      </div>
     </div>
   );
 };
