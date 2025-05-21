@@ -53,7 +53,7 @@ const NotesEditor = ({ note, onNoteChange }) => {
           </button>
           <button
             onClick={() => handleCopy(note)}
-            className="flex items-center space-x-1 text-gray-500 hover:text-green-600 transition px-2 py-1 rounded-full border border-gray-300 hover:border-green-600 bg-white"
+            className="flex items-center space-x-1 text-gray-500 hover:text-green-600 transition px-2 py-1 rounded-full border border-gray-300 hover:border-green-600 bg-white cursor-pointer"
             title="Copy Notes to Clipboard"
           >
             <FileText className="w-4 h-4" />
@@ -61,7 +61,7 @@ const NotesEditor = ({ note, onNoteChange }) => {
           </button>
           <button
             onClick={handleLeaveRoom}
-            className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition text-xs md:text-base font-semibold ml-2"
+            className="px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition text-xs md:text-base font-semibold ml-2 cursor-pointer"
             title="Leave Room"
           >
             Leave Room

@@ -47,6 +47,7 @@ export default function socketHandlers(io) {
           participants: room.participants,
           admin: room.admin, // <-- send admin
           currNotes: room.currNotes || "",
+          roomName: room.roomName,
         });
       }
     });
@@ -118,6 +119,7 @@ export default function socketHandlers(io) {
       //   }, 500); // 500ms delay
       const roomId = socket.roomId;
       socket.leave(roomId);
+      console.log("client disconnected :" + socket.id);
       if (socket.userId) {
         const stillInRoom = await isUserStillInRoom(roomId, socket.userId);
         if (!stillInRoom) {

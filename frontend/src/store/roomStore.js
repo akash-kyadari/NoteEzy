@@ -5,8 +5,8 @@ const useRoomStore = create((set) => ({
   roomName: "",
   admin: null,
   participants: [],
-  setRoomData: (roomId, participants, admin = {}) =>
-    set({ roomId, participants, admin }),
+  setRoomData: (roomId, participants, admin = {}, roomName = "") =>
+    set({ roomId, participants, admin, roomName }),
   setParticipants: (participants) => set({ participants }),
   setAdmin: (admin) => set({ admin }),
   clearRoom: () => set({ roomId: null, participants: [], admin: {} }),

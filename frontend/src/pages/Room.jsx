@@ -13,7 +13,7 @@ const Room = () => {
   const setRoomData = useRoomStore((state) => state.setRoomData);
   const setParticipants = useRoomStore((state) => state.setParticipants);
   const [note, setNote] = React.useState("");
-
+  const roomName = useRoomStore((state) => state.roomName);
   // Join room and set up listeners
   useEffect(() => {
     if (!roomId || !userId) return;
@@ -23,10 +23,14 @@ const Room = () => {
     // Fetch latest room data after joining
     socket.emit("get-room-data", { roomId });
 
-    socket.on("room-data", ({ participants, admin, currNotes }) => {
+    socket.on("room-data", ({ participants, admin, currNotes, roomName }) => {
       setParticipants(participants);
       useRoomStore.getState().setAdmin(admin);
       setNote(currNotes || "");
+      if (roomName)
+        useRoomStore
+          .getState()
+          .setRoomData(roomId, participants, admin, roomName);
     });
 
     socket.on("participants-update", ({ participants, admin }) => {
@@ -55,8 +59,11 @@ const Room = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 flex items-center justify-center py-6">
-      <div className="flex flex-col md:flex-row w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-2xl shadow-2xl overflow-hidden bg-white border border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 flex flex-col items-center justify-center py-6">
+      <div className="w-full max-w-6xl text-center py-4 bg-white rounded-t-2xl shadow font-semibold text-xl tracking-wide border border-b-0 border-gray-200 mb-[-1px]">
+        {roomName || "Room"}
+      </div>
+      <div className="flex flex-col md:flex-row w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-bl-2xl rounded-br-2xl shadow-2xl overflow-hidden bg-white border border-gray-200">
         {/* Sidebar */}
         <aside className="w-full md:w-[36%] min-w-0 max-w-full md:min-w-[280px] md:max-w-[400px] bg-white flex flex-col border-b md:border-b-0 md:border-r border-gray-200">
           <ParticipantsSidebar />
