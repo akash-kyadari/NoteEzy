@@ -2,17 +2,19 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Clipboard, FileText } from "lucide-react";
 import socket from "../socket.js";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import useAuthStore from "../store/store.js";
 
 const CollaborativeNote = ({}) => {
   const [note, setNote] = useState("");
   const [joined, setJoined] = useState(false);
   const { roomId } = useParams();
+  const userId = useAuthStore((state) => state?.userId);
 
   useEffect(() => {
     const handleConnect = () => {
       console.log("🔗 Socket connected, emitting join-room", roomId);
-      socket.emit("join-room", roomId);
+      socket.emit("join-room", { roomId, userId });
     };
 
     const handleJoinedRoom = ({ roomId, currNotes }) => {
@@ -43,7 +45,7 @@ const CollaborativeNote = ({}) => {
       socket.off("joined-room", handleJoinedRoom);
       socket.off("receive-note");
     };
-  }, [roomId]);
+  }, [roomId, userId]);
 
   const handleChange = (e) => {
     const newText = e.target.value;
@@ -68,6 +70,14 @@ const CollaborativeNote = ({}) => {
     setTimeout(() => {
       iconRef.current.classList.remove("scale-90");
     }, 150);
+  };
+  const navigate = useNavigate();
+  const handleLeaveRoom = () => {
+    socket.emit("leave-room", roomId);
+    setJoined(false);
+    setNote("");
+    // Optionally redirect to home or another page
+    navigate("/");
   };
   return (
     // <div>
@@ -111,6 +121,14 @@ const CollaborativeNote = ({}) => {
           >
             <FileText className="w-4 h-4" />
             <span className="text-sm select-none">Copy Notes</span>
+          </button>
+          {/* Leave Room Button */}
+          <button
+            onClick={handleLeaveRoom}
+            className="ml-2 px-3 py-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition"
+            title="Leave Room"
+          >
+            Leave Room
           </button>
         </div>
       </div>

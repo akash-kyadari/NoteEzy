@@ -17,6 +17,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       navigate("/login");
+      return;
     }
 
     if (isAuthenticated && !socket.connected) {
