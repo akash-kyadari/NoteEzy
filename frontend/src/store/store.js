@@ -117,69 +117,6 @@ const useAuthStore = create((set) => ({
       });
     }
   },
-  roomData: null,
-  roomLoading: false,
-  roomError: "",
-
-  fetchRoom: async (roomId) => {
-    set({ roomLoading: true, roomError: "" });
-    console.log("in fetch room/...");
-    try {
-      const res = await fetch(`http://localhost:3000/api/room/${roomId}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch room");
-      console.log(data);
-      set({ roomData: data, roomLoading: false });
-    } catch (err) {
-      set({ roomError: err.message, roomLoading: false });
-    }
-  },
-
-  clearRoomData: () =>
-    set({ roomData: null, roomError: "", roomLoading: false }),
-  // Inside create() in store.js
-  createRoom: async () => {
-    try {
-      const res = await fetch("http://localhost:3000/api/room/create", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Room creation failed");
-
-      // Optional: set current room in state
-      set({ roomData: data });
-      return data.roomId; // return new roomId for navigation
-    } catch (err) {
-      console.error("createRoom error:", err.message);
-      throw err;
-    }
-  },
-
-  joinRoom: async (roomId) => {
-    console.log("in join room");
-    try {
-      const res = await fetch(`http://localhost:3000/api/room/join`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ roomId }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Room not found");
-      console.log(data);
-      // Optional: set joined room data in store
-      set({ roomData: data });
-      return true;
-    } catch (err) {
-      console.error("joinRoom error:", err.message);
-      throw err;
-    }
-  },
 }));
 
 export default useAuthStore;

@@ -1,13 +1,20 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/store.js";
-import socket from "../socket"; //
+import useRoomStore from "../store/roomStore.js";
+import socket from "../socket";
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const joinRoomRef = useRef(null);
+  const createRoomRef = useRef(null);
 
-  const { isAuthenticated, logout, loading, createRoom, joinRoom, userId } =
-    useAuthStore();
+  const { isAuthenticated, logout, loading } = useAuthStore();
+  // FIX: Get createRoom as a function from the store
+  const createRoom = useRoomStore((state) => state.createRoom);
+  const checkRoomId = useRoomStore((state) => state.checkRoomId);
+  const [creatingRoom, setCreatingRoom] = useState(false);
+
   const recentRooms = [
     { id: "room-abc123", name: "Design Sprint" },
     { id: "room-def456", name: "Team Planning" },
@@ -19,51 +26,45 @@ const Dashboard = () => {
       navigate("/login");
       return;
     }
-
     if (isAuthenticated && !socket.connected) {
       socket.connect();
     }
-
-    // REMOVE socket.disconnect() from here!
-  }, [isAuthenticated, loading]);
+  }, [isAuthenticated, loading, navigate]);
 
   const handleCreateRoom = async () => {
+    const roomName = createRoomRef.current.value.trim();
+    if (!roomName) {
+      alert("Please enter a room name");
+      return;
+    }
+    setCreatingRoom(true);
     try {
-      const newRoomId = await createRoom();
-      // REMOVE socket.emit("join-room", ...)
+      const newRoomId = await createRoom(roomName);
+      createRoomRef.current.value = "";
       navigate(`/room/${newRoomId}`);
     } catch (err) {
       alert(`Failed to create room: ${err.message}`);
+    } finally {
+      setCreatingRoom(false);
     }
   };
 
   const handleJoinRoom = async () => {
     const enteredRoomId = joinRoomRef.current.value.trim();
     if (!enteredRoomId) return alert("Please enter a room ID");
-
-    try {
-      await joinRoom(enteredRoomId);
-      // REMOVE socket.emit("join-room", ...)
-      navigate(`/room/${enteredRoomId}`);
-    } catch (err) {
-      alert(`Failed to join room: ${err.message}`);
-    }
+    const isValid = await checkRoomId(enteredRoomId);
+    if (!isValid) return alert("Room ID not found!");
+    navigate(`/room/${enteredRoomId}`);
   };
 
-  const handleJoinRecentRoom = async (roomId) => {
-    try {
-      await joinRoom(roomId);
-      // REMOVE socket.emit("join-room", ...)
-      navigate(`/room/${roomId}`);
-    } catch (err) {
-      alert(`Could not join recent room: ${err.message}`);
-    }
+  const handleJoinRecentRoom = (roomId) => {
+    navigate(`/room/${roomId}`);
   };
 
   const handleLogout = async () => {
     const success = await logout();
     if (success) {
-      socket.disconnect(); // ✅ disconnect on logout only
+      socket.disconnect();
       navigate("/");
     }
   };
@@ -106,37 +107,74 @@ const Dashboard = () => {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-3xl mx-auto text-center pt-32 px-6">
-        <h1 className="text-4xl font-bold mb-4">Welcome Back 👋</h1>
-        <p className="text-gray-300 mb-10">Choose an option to get started:</p>
+      <div className="max-w-4xl mx-auto pt-36 px-4">
+        <h1 className="text-5xl font-extrabold mb-4 text-center drop-shadow-lg">
+          Welcome to <span className="text-indigo-400">WhiteboardApp</span>!
+        </h1>
+        <p className="text-gray-300 mb-12 text-center text-lg">
+          Collaborate in real-time with your team. Create a new room or join an
+          existing one to get started!
+        </p>
 
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 mb-12">
-          <button
-            onClick={handleCreateRoom}
-            className="bg-indigo-500 hover:bg-indigo-600 px-6 py-3 rounded-lg font-semibold transition"
-          >
-            ➕ Create New Room
-          </button>
+        <div className="flex flex-col md:flex-row justify-center items-stretch gap-10 mb-16">
+          {/* Create Room (Left) */}
+          <div className="flex-1 bg-gradient-to-br from-indigo-900/60 via-indigo-800/60 to-gray-900/60 rounded-xl shadow-lg p-8 flex flex-col items-center justify-center">
+            <h2 className="text-2xl font-bold mb-4 text-indigo-300">
+              Create a New Room
+            </h2>
+            <p className="text-gray-400 mb-6 text-center">
+              Start a fresh collaboration space for your team or project.
+            </p>
+            <div className="flex w-full gap-2 mb-2">
+              <input
+                ref={createRoomRef}
+                type="text"
+                placeholder="Enter Room Name"
+                className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-md outline-none"
+                disabled={creatingRoom}
+              />
+              <button
+                onClick={handleCreateRoom}
+                className="bg-indigo-500 hover:bg-indigo-600 px-6 py-2 rounded-lg font-semibold transition"
+                disabled={creatingRoom}
+              >
+                {creatingRoom ? "Creating..." : "Create"}
+              </button>
+            </div>
+            <span className="text-xs text-gray-500">Room name is required</span>
+          </div>
 
-          <div className="flex gap-2 items-center">
-            <input
-              ref={joinRoomRef}
-              type="text"
-              placeholder="Enter Room ID"
-              className="bg-gray-700 text-white px-4 py-2 rounded-md outline-none"
-            />
-            <button
-              onClick={handleJoinRoom}
-              className="bg-white text-black font-semibold px-4 py-2 rounded-md hover:bg-gray-200 transition"
-            >
-              Join
-            </button>
+          {/* Join Room (Right) */}
+          <div className="flex-1 bg-gradient-to-br from-gray-900/60 via-gray-800/60 to-indigo-900/60 rounded-xl shadow-lg p-8 flex flex-col items-center justify-center">
+            <h2 className="text-2xl font-bold mb-4 text-indigo-300">
+              Join a Room
+            </h2>
+            <p className="text-gray-400 mb-6 text-center">
+              Already have a room ID? Enter it below to join your team.
+            </p>
+            <div className="flex w-full gap-2 mb-2">
+              <input
+                ref={joinRoomRef}
+                type="text"
+                placeholder="Enter Room ID"
+                className="flex-1 bg-gray-700 text-white px-4 py-2 rounded-md outline-none"
+              />
+              <button
+                onClick={handleJoinRoom}
+                className="bg-white text-black font-semibold px-4 py-2 rounded-md hover:bg-gray-200 transition"
+              >
+                Join
+              </button>
+            </div>
+            <span className="text-xs text-gray-500">Room ID is required</span>
           </div>
         </div>
 
         {/* Recent Collaborations */}
-        <div className="bg-white/5 p-6 rounded-lg shadow-md text-left">
-          <h2 className="text-2xl font-bold mb-4">🕘 Recent Collaborations</h2>
+        <div className="bg-white/5 p-6 rounded-lg shadow-md text-left max-w-2xl mx-auto">
+          <h2 className="text-2xl font-bold mb-4 text-indigo-200">
+            🕘 Recent Collaborations
+          </h2>
           <ul className="space-y-2">
             {recentRooms.map((room) => (
               <li

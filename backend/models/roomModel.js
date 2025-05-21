@@ -3,13 +3,17 @@
 import mongoose from "mongoose";
 
 const roomSchema = new mongoose.Schema({
+  roomName: {
+    type: String,
+    required: true,
+  },
   roomId: {
     type: String,
     required: true,
     unique: true,
   },
   participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  adminId: {
+  admin: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,

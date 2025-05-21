@@ -10,7 +10,8 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/DashBoard";
 import useAuthStore from "./store/store.js";
-import CollaborativeNote from "./pages/Notes.jsx";
+import CollaborativeNote from "./extra/Notes.jsx";
+import Room from "./pages/Room.jsx";
 
 function App() {
   const { isAuthenticated, checkAuth, loading } = useAuthStore();
@@ -44,9 +45,7 @@ function App() {
         />
         <Route
           path="/room/:roomId"
-          element={
-            isAuthenticated ? <CollaborativeNote /> : <Navigate to="/login" />
-          }
+          element={isAuthenticated ? <Room /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>
