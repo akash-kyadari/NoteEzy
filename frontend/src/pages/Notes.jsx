@@ -80,16 +80,6 @@ const CollaborativeNote = ({}) => {
     navigate("/");
   };
   return (
-    // <div>
-    //   <h2>Room: {roomId}</h2>
-    //   <textarea
-    //     value={note}
-    //     onChange={handleChange}
-    //     rows={15}
-    //     cols={60}
-    //     placeholder="Start typing your shared note..."
-    //   />
-    // </div>
     <div className="flex flex-col max-w-4xl mx-auto mt-10 px-4 sm:px-6 lg:px-8 h-[79.55vh]">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
