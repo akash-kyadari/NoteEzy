@@ -36,7 +36,7 @@ const SignupPage = () => {
     <div className="bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white min-h-screen flex flex-col justify-center items-center py-10">
       <button
         onClick={handleBack}
-        className="absolute top-6 left-6 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
+        className="absolute top-6 left-6 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-semibold transition-all transform hover:scale-105 cursor-pointer"
       >
         &larr; Back
       </button>
@@ -45,7 +45,7 @@ const SignupPage = () => {
         <h2 className="text-4xl font-bold text-center text-white mb-8">
           Sign Up
         </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 cursor-pointer">
           {/* Full Name Input */}
           <div>
             <label
@@ -103,7 +103,7 @@ const SignupPage = () => {
           <div>
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 cursor-pointer"
             >
               Sign Up
             </button>

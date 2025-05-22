@@ -10,7 +10,6 @@ import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/DashBoard";
 import useAuthStore from "./store/store.js";
-import CollaborativeNote from "./extra/Notes.jsx";
 import Room from "./pages/Room.jsx";
 
 function App() {

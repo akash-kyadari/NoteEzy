@@ -36,7 +36,7 @@ const LoginPage = () => {
       {/* Back Button */}
       <button
         onClick={handleBack}
-        className="absolute top-6 left-6 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-semibold transition-all transform hover:scale-105"
+        className="absolute top-6 left-6 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full font-semibold transition-all transform hover:scale-105 cursor-pointer"
       >
         &larr; Back
       </button>
@@ -87,7 +87,7 @@ const LoginPage = () => {
           <div>
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 cursor-pointer"
             >
               Log In
             </button>

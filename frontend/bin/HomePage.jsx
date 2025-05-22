@@ -80,7 +80,9 @@ const HomePage = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button onClick={handleCreateRoom}>Create</button>
+        <button onClick={handleCreateRoom} className="cursor-pointer">
+          Create
+        </button>
       </div>
 
       <div>
@@ -97,7 +99,9 @@ const HomePage = () => {
           value={roomId}
           onChange={(e) => setRoomId(e.target.value)}
         />
-        <button onClick={handleJoinRoom}>Join</button>
+        <button onClick={handleJoinRoom} className="cursor-pointer">
+          Join
+        </button>
       </div>
     </div>
   );
