@@ -10,6 +10,7 @@ import roomRouter from "./routes/roomRoutes.js";
 import authRouter from "./routes/authRoute.js";
 import socketHandler from "./sockets/socket.js";
 import { protectRoute } from "./controllers/authController.js";
+import handler from "./controllers/aichatController.js";
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ app.use(cookieParser());
 
 app.use("/api/room", protectRoute, roomRouter);
 app.use("/api/auth", authRouter);
-
+app.post("/api/chat-ai", protectRoute, handler);
 // ✅ Setup Socket.IO and pass server instance
 const io = new Server(server, {
   cors: {

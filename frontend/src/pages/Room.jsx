@@ -5,6 +5,7 @@ import useAuthStore from "../store/store";
 import useRoomStore from "../store/roomStore";
 import ParticipantsSidebar from "../components/ParticipantsSidebar";
 import NotesEditor from "../components/NotesEditor";
+import ChatWidget from "../components/ChatBotWidget";
 
 const Room = () => {
   const { roomId } = useParams();
@@ -73,6 +74,7 @@ const Room = () => {
           <NotesEditor note={note} onNoteChange={handleNoteChange} />
         </main>
       </div>
+      <ChatWidget notes={note} />
     </div>
   );
 };
