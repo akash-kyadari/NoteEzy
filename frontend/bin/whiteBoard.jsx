@@ -21,7 +21,7 @@ const WhiteboardPage = () => {
 
   // Connect to socket
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    const socket = io(import.meta.env.VITE_BACKEND_URL);
     setSocket(socket);
 
     socket.emit("join-room", { roomId, userId });

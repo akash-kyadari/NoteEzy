@@ -13,9 +13,8 @@ const useRoomStore = create((set) => ({
   createRoom: async (roomName) => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/room/create?name=${encodeURIComponent(
-          roomName
-        )}`,
+        import.meta.env.VITE_BACKEND_URL +
+          `/api/room/create?name=${encodeURIComponent(roomName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -39,7 +38,9 @@ const useRoomStore = create((set) => ({
   checkRoomId: async (roomId) => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/room/check/${encodeURIComponent(roomId)}`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/room/check/${encodeURIComponent(roomId)}`,
         {
           method: "GET",
           credentials: "include",

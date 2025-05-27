@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/DashBoard";
 import useAuthStore from "./store/store.js";
 import Room from "./pages/Room.jsx";
+import ProfilePage from "./pages/profilePage.jsx";
 
 function App() {
   const { isAuthenticated, checkAuth, loading } = useAuthStore();
@@ -40,6 +41,13 @@ function App() {
           element={
             // ✅ This is now safe because we don't render this until loading is false
             isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            // ✅ This is now safe because we don't render this until loading is false
+            isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />
           }
         />
         <Route

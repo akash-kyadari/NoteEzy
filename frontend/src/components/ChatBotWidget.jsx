@@ -28,7 +28,7 @@ const MessageBubble = ({ content, isUser }) => (
 );
 
 const ChatWidget = ({
-  apiUrl = "http://localhost:3000/api/chat-ai",
+  apiUrl = import.meta.env.VITE_BACKEND_URL + "/api/chat-ai",
   initialMessage = "How can I help you today?",
   position = "right", // 'right' or 'left'
   notes = "",
@@ -103,7 +103,7 @@ const ChatWidget = ({
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 ${position}-6 w-14 h-14 rounded-full bg-gray-900 shadow-lg flex items-center justify-center text-gray-100 hover:bg-gray-700 transition-colors border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gray-900 shadow-lg flex items-center justify-center text-gray-100 hover:bg-gray-700 transition-colors border border-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
           isOpen ? "opacity-0 pointer-events-none" : ""
         }`}
         aria-label="Open chat"

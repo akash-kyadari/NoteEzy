@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/store.js";
 import useRoomStore from "../store/roomStore.js";
 import socket from "../socket";
-
+import { User } from "lucide-react";
 const Dashboard = () => {
   const navigate = useNavigate();
   const joinRoomRef = useRef(null);
@@ -74,7 +74,7 @@ const Dashboard = () => {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-800 via-gray-900 to-gray-900 backdrop-blur border-b border-white/10 px-6 md:px-10 py-4 flex justify-between items-center shadow-md">
         <h1 className="text-3xl font-extrabold tracking-wide text-white drop-shadow">
-          WhiteboardApp
+          NoteSync
         </h1>
         <div className="space-x-4 flex items-center">
           {!isAuthenticated ? (
@@ -94,9 +94,15 @@ const Dashboard = () => {
             </>
           ) : (
             <>
-              <div className="text-xl">👤</div>
               <button
-                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full font-semibold transition-all"
+                onClick={() => navigate("/profile")}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-xl transition duration-200 shadow-sm cursor-pointer"
+                aria-label="Go to profile"
+              >
+                <User className="w-5 h-5" />
+              </button>{" "}
+              <button
+                className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full font-semibold transition-all cursor-pointer"
                 onClick={handleLogout}
               >
                 Logout
@@ -109,7 +115,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto pt-36 px-4">
         <h1 className="text-5xl font-extrabold mb-4 text-center drop-shadow-lg">
-          Welcome to <span className="text-indigo-400">WhiteboardApp</span>!
+          Welcome to <span className="text-indigo-400">NoteSync</span>!
         </h1>
         <p className="text-gray-300 mb-12 text-center text-lg">
           Collaborate in real-time with your team. Create a new room or join an
@@ -175,7 +181,7 @@ const Dashboard = () => {
           <h2 className="text-2xl font-bold mb-4 text-indigo-200">
             🕘 Recent Collaborations
           </h2>
-          <ul className="space-y-2">
+          {/* <ul className="space-y-2">
             {recentRooms.map((room) => (
               <li
                 key={room.id}
@@ -186,7 +192,8 @@ const Dashboard = () => {
                 <span className="text-sm text-gray-400">{room.id}</span>
               </li>
             ))}
-          </ul>
+          </ul> */}
+          <p className="text-gray-400 italic">Coming soon...</p>
         </div>
       </div>
     </div>

@@ -15,11 +15,14 @@ const HomePage = () => {
     const userId = generateUserId();
 
     try {
-      const res = await fetch("http://localhost:3000/api/room/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adminName: name, adminId: userId }),
-      });
+      const res = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/api/room/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ adminName: name, adminId: userId }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -44,11 +47,14 @@ const HomePage = () => {
     const userId = generateUserId();
 
     try {
-      const res = await fetch("http://localhost:3000/api/room/join", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userName: name, userId, roomId }),
-      });
+      const res = await fetch(
+        import.meta.env.VITE_BACKEND_URL + "/api/room/join",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userName: name, userId, roomId }),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -70,7 +76,7 @@ const HomePage = () => {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>Welcome to Whiteboard App</h1>
+      <h1>Welcome to NoteSync App</h1>
 
       <div style={{ marginBottom: "2rem" }}>
         <h2>Create Room</h2>

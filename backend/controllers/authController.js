@@ -40,10 +40,12 @@ export const signup = async (req, res) => {
     await newUser.save();
 
     const token = generateToken(newUser._id);
+    const userWithoutPassword = newUser.toObject();
+    delete userWithoutPassword.password;
     res
       .cookie("token", token, cookieOptions)
       .status(201)
-      .json({ userId: newUser._id });
+      .json({ userId: newUser._id, user: userWithoutPassword });
   } catch (err) {
     console.error("error in signup Route" + err.message);
     res.status(500).json({ msg: "Server error" });
@@ -66,10 +68,12 @@ export const login = async (req, res) => {
       return res.status(400).json({ msg: "Invalid email or password." });
 
     const token = generateToken(user._id);
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
     res
       .cookie("token", token, cookieOptions)
       .status(200)
-      .json({ userId: user._id });
+      .json({ userId: user._id, user: userWithoutPassword });
   } catch (err) {
     console.error("error in login Route" + err.message);
     res.status(500).json({ msg: "Server error" });
