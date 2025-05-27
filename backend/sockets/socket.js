@@ -9,10 +9,11 @@ export default function socketHandlers(io) {
   }
 
   io.on("connection", (socket) => {
-    console.log("New client connected:", socket.id);
+    // //console.log("New client connected:", socket.id);
 
     // Join room and update participants
     socket.on("join-room", async ({ roomId, userId }) => {
+      ("joining room");
       socket.join(roomId);
       socket.userId = userId;
       socket.roomId = roomId;
@@ -29,6 +30,7 @@ export default function socketHandlers(io) {
         room = await Room.findOne({ roomId })
           .populate("participants", "fullName _id")
           .populate("admin", "fullName _id"); // <-- populate admin
+        //console.log(room.participants);
         io.to(roomId).emit("participants-update", {
           participants: room.participants,
           admin: room.admin, // <-- send admin
@@ -60,6 +62,7 @@ export default function socketHandlers(io) {
           { currNotes: content },
           { new: true }
         );
+        //console.log("receive-note", content);
         io.to(roomId).emit("receive-note", content);
       } catch (err) {
         socket.emit("error", "Could not save note.");
@@ -119,7 +122,7 @@ export default function socketHandlers(io) {
       //   }, 500); // 500ms delay
       const roomId = socket.roomId;
       socket.leave(roomId);
-      console.log("client disconnected :" + socket.id);
+      //console.log("client disconnected :" + socket.id);
       if (socket.userId) {
         const stillInRoom = await isUserStillInRoom(roomId, socket.userId);
         if (!stillInRoom) {

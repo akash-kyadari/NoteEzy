@@ -27,7 +27,6 @@ export default async function handler(req, res) {
     );
 
     const data = await geminiRes.json();
-    console.log("Gemini API Response:", data);
 
     if (data.error) {
       return res

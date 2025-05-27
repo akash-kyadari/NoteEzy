@@ -23,7 +23,7 @@ const useAuthStore = create((set) => ({
           body: JSON.stringify({ email, password }),
         }
       );
-      console.log(res);
+      //console.log(res);
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.msg);
@@ -100,7 +100,7 @@ const useAuthStore = create((set) => ({
   },
 
   checkAuth: async () => {
-    console.log("Inside checkAuth...");
+    //console.log("Inside checkAuth...");
 
     set({ loading: true });
     try {
@@ -115,11 +115,11 @@ const useAuthStore = create((set) => ({
       if (!res.ok) throw new Error();
 
       const data = await res.json();
-      console.log("✅ checkAuth success:", data);
+      //console.log("✅ checkAuth success:", data);
 
       // Here, assuming data contains user details directly
       set({
-        userId: data._id,
+        userId: data.userId,
         user: data,
         isAuthenticated: true,
         loading: false,

@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
+
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/store.js";
 import useRoomStore from "../store/roomStore.js";
@@ -34,16 +36,17 @@ const Dashboard = () => {
   const handleCreateRoom = async () => {
     const roomName = createRoomRef.current.value.trim();
     if (!roomName) {
-      alert("Please enter a room name");
+      toast.error("Please enter a room name");
       return;
     }
     setCreatingRoom(true);
     try {
       const newRoomId = await createRoom(roomName);
       createRoomRef.current.value = "";
+      toast.success("Room created successfully!");
       navigate(`/room/${newRoomId}`);
     } catch (err) {
-      alert(`Failed to create room: ${err.message}`);
+      toast.error(`Failed to create room: ${err.message}`);
     } finally {
       setCreatingRoom(false);
     }
@@ -51,9 +54,15 @@ const Dashboard = () => {
 
   const handleJoinRoom = async () => {
     const enteredRoomId = joinRoomRef.current.value.trim();
-    if (!enteredRoomId) return alert("Please enter a room ID");
+    if (!enteredRoomId) {
+      toast.error("Please enter a room ID");
+      return;
+    }
     const isValid = await checkRoomId(enteredRoomId);
-    if (!isValid) return alert("Room ID not found!");
+    if (!isValid) {
+      toast.error("Room ID not found!");
+      return;
+    }
     navigate(`/room/${enteredRoomId}`);
   };
 
@@ -65,6 +74,7 @@ const Dashboard = () => {
     const success = await logout();
     if (success) {
       socket.disconnect();
+      toast.success("successfully logged out");
       navigate("/");
     }
   };

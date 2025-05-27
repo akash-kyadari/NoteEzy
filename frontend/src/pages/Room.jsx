@@ -17,7 +17,10 @@ const Room = () => {
   const roomName = useRoomStore((state) => state.roomName);
   // Join room and set up listeners
   useEffect(() => {
-    if (!roomId || !userId) return;
+    if (!roomId || !userId) {
+      console.warn("Missing roomId or userId", { roomId, userId });
+      return;
+    }
 
     socket.emit("join-room", { roomId, userId });
 
@@ -41,6 +44,7 @@ const Room = () => {
 
     socket.on("receive-note", (content) => {
       setNote(content);
+      //console.log(content);
     });
 
     return () => {
@@ -55,6 +59,7 @@ const Room = () => {
     (newNote) => {
       setNote(newNote);
       socket.emit("note-change", { roomId, content: newNote });
+      //console.log("sending note change", newNote);
     },
     [roomId]
   );

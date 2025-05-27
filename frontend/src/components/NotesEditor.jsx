@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { Clipboard, FileText } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import socket from "../socket";
-
+import toast from "react-hot-toast";
 const NotesEditor = ({ note, onNoteChange }) => {
   const { roomId } = useParams();
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ const NotesEditor = ({ note, onNoteChange }) => {
   // Leave room and notify others
   const handleLeaveRoom = () => {
     socket.emit("leave-room", roomId);
+    toast.success("left room successfully.");
     navigate("/");
   };
 

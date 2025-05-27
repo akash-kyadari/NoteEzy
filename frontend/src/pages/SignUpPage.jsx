@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../store/store.js";
+import toast from "react-hot-toast";
 
 const SignupPage = () => {
   const fullNameRef = useRef(null);
@@ -22,6 +23,7 @@ const SignupPage = () => {
     const errorMessage = await signup(email, password, fullName);
 
     if (errorMessage === true) {
+      toast.success("successfully signed up");
       navigate("/dashboard");
     } else {
       setErrorMessage(errorMessage);

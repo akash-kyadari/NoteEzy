@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Use useNavigate in React Router v6
 import useAuthStore from "../store/store.js";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const emailRef = useRef(null);
@@ -21,6 +22,7 @@ const LoginPage = () => {
     const errorMessage = await login(email, password);
 
     if (errorMessage === true) {
+      toast.success("successfully logged in");
       navigate("/dashboard"); // Navigate to the dashboard if login is successful
     } else {
       setErrorMessage(errorMessage); // Set the dynamic error message returned from the API

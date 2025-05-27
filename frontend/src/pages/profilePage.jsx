@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/store.js";
 import { ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
   const { user, logout } = useAuthStore();
@@ -12,6 +13,7 @@ const ProfilePage = () => {
   const handleLogout = async () => {
     const result = await logout();
     if (result) {
+      toast.success("successfully logged out");
       navigate("/");
     }
   };
