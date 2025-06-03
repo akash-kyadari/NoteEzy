@@ -5,11 +5,14 @@ const useRoomStore = create((set) => ({
   roomName: "",
   admin: null,
   participants: [],
+  typingUserId: null, // Add typing user ID state
   setRoomData: (roomId, participants, admin = {}, roomName = "") =>
     set({ roomId, participants, admin, roomName }),
   setParticipants: (participants) => set({ participants }),
   setAdmin: (admin) => set({ admin }),
-  clearRoom: () => set({ roomId: null, participants: [], admin: {} }),
+  setTypingUserId: (userId) => set({ typingUserId: userId }), // new setter
+  clearRoom: () =>
+    set({ roomId: null, participants: [], admin: {}, typingUserId: null }),
   createRoom: async (roomName) => {
     try {
       const res = await fetch(
@@ -51,7 +54,6 @@ const useRoomStore = create((set) => ({
       );
       if (!res.ok) return false;
       const data = await res.json();
-      // Set admin if present in response
       if (data.valid && data.admin) {
         set((state) => ({
           ...state,

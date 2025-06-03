@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useCallback, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 import socket from "../socket";
 import useAuthStore from "../store/store";
 import useRoomStore from "../store/roomStore";
@@ -9,28 +9,23 @@ import ChatWidget from "../components/ChatBotWidget";
 
 const Room = () => {
   const { roomId } = useParams();
-  const navigate = useNavigate();
   const userId = useAuthStore((state) => state.userId);
-  const setRoomData = useRoomStore((state) => state.setRoomData);
   const setParticipants = useRoomStore((state) => state.setParticipants);
-  const [note, setNote] = React.useState("");
+  const [note, setNoteState] = useState("");
+  const [typingUserId, setTypingUserId] = useState(null);
+  const typingTimeoutRef = useRef(null);
   const roomName = useRoomStore((state) => state.roomName);
-  // Join room and set up listeners
+
   useEffect(() => {
-    if (!roomId || !userId) {
-      console.warn("Missing roomId or userId", { roomId, userId });
-      return;
-    }
+    if (!roomId || !userId) return;
 
     socket.emit("join-room", { roomId, userId });
-
-    // Fetch latest room data after joining
     socket.emit("get-room-data", { roomId });
 
     socket.on("room-data", ({ participants, admin, currNotes, roomName }) => {
       setParticipants(participants);
       useRoomStore.getState().setAdmin(admin);
-      setNote(currNotes || "");
+      setNoteState(currNotes || "");
       if (roomName)
         useRoomStore
           .getState()
@@ -43,43 +38,99 @@ const Room = () => {
     });
 
     socket.on("receive-note", (content) => {
-      setNote(content);
-      //console.log(content);
+      setNoteState(content);
+    });
+
+    socket.on("typing-update", ({ userId: typingId }) => {
+      setTypingUserId(typingId);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      if (typingId) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setTypingUserId(null);
+        }, 3000);
+      }
+    });
+
+    socket.on("typing-rejected", ({ reason }) => {
+      console.warn("Typing rejected:", reason);
     });
 
     return () => {
       socket.off("room-data");
       socket.off("participants-update");
       socket.off("receive-note");
+      socket.off("typing-update");
+      socket.off("typing-rejected");
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
   }, [roomId, userId, setParticipants]);
 
-  // Emit note changes to server
+  const typingEmitTimeout = useRef(null);
+  const isTyping = useRef(false);
+
   const handleNoteChange = useCallback(
     (newNote) => {
-      setNote(newNote);
+      setNoteState(newNote);
       socket.emit("note-change", { roomId, content: newNote });
-      //console.log("sending note change", newNote);
+
+      if (!isTyping.current) {
+        socket.emit("start-typing", { roomId, userId });
+        isTyping.current = true;
+      }
+
+      if (typingEmitTimeout.current) clearTimeout(typingEmitTimeout.current);
+      typingEmitTimeout.current = setTimeout(() => {
+        socket.emit("stop-typing", { roomId, userId });
+        isTyping.current = false;
+      }, 1500);
     },
-    [roomId]
+    [roomId, userId]
   );
 
+  const handleBlur = () => {
+    if (typingEmitTimeout.current) {
+      clearTimeout(typingEmitTimeout.current);
+      typingEmitTimeout.current = null;
+    }
+    if (isTyping.current) {
+      socket.emit("stop-typing", { roomId, userId });
+      isTyping.current = false;
+    }
+  };
+
+  const isLockedForCurrentUser = typingUserId && typingUserId !== userId;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 flex flex-col items-center justify-center py-6">
-      <div className="w-full max-w-6xl text-center py-4 bg-white rounded-t-2xl shadow font-semibold text-xl tracking-wide border border-b-0 border-gray-200 mb-[-1px]">
-        {roomName || "Room"}
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-100 py-6 px-4">
+      <div className="w-full max-w-6xl mx-auto rounded-2xl shadow border border-gray-200 overflow-hidden">
+        <div className="bg-white px-6 py-4 border-b border-gray-200 text-center text-xl font-semibold text-gray-800">
+          {roomName || "Room"}
+          <p className="text-sm text-gray-500 mt-1">
+            Real-time collaboration space for ideas and notes
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row h-[85vh]">
+          <aside className="w-full md:w-[32%] max-w-full md:min-w-[260px] md:max-w-[360px] border-b md:border-b-0 md:border-r border-gray-200 bg-white">
+            <ParticipantsSidebar typingUserId={typingUserId} />
+          </aside>
+
+          <main className="flex-1 bg-gray-50">
+            <NotesEditor
+              note={note}
+              onNoteChange={handleNoteChange}
+              onBlur={handleBlur}
+              typingUserId={typingUserId}
+              userId={userId}
+              disabled={isLockedForCurrentUser}
+            />
+          </main>
+        </div>
+
+        <div className="bg-white border-t border-gray-200 px-4 py-2">
+          <ChatWidget notes={note} />
+        </div>
       </div>
-      <div className="flex flex-col md:flex-row w-full max-w-6xl h-[90vh] md:h-[80vh] rounded-bl-2xl rounded-br-2xl shadow-2xl overflow-hidden bg-white border border-gray-200">
-        {/* Sidebar */}
-        <aside className="w-full md:w-[36%] min-w-0 max-w-full md:min-w-[280px] md:max-w-[400px] bg-white flex flex-col border-b md:border-b-0 md:border-r border-gray-200">
-          <ParticipantsSidebar />
-        </aside>
-        {/* Notes */}
-        <main className="flex-1 bg-gray-50 flex flex-col">
-          <NotesEditor note={note} onNoteChange={handleNoteChange} />
-        </main>
-      </div>
-      <ChatWidget notes={note} />
     </div>
   );
 };
