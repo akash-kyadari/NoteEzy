@@ -12,15 +12,14 @@ const generateToken = (userId) => {
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production", // only secure over HTTPS in production
-  sameSite: "Strict",
   maxAge: 24 * 60 * 60 * 1000, // 1 day
 };
 
 export const signup = async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { name, email, password } = req.body;
 
   // Inline validation
-  if (!email || !password || !fullName)
+  if (!email || !password || !name)
     return res.status(400).json({ msg: "All fields  are required." });
 
   if (!/\S+@\S+\.\S+/.test(email))
@@ -36,7 +35,7 @@ export const signup = async (req, res) => {
     if (exists) return res.status(400).json({ msg: "User already exists." });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ fullName, email, password: hashedPassword });
+    const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
     const token = generateToken(newUser._id);
@@ -59,9 +58,15 @@ export const login = async (req, res) => {
     return res.status(400).json({ msg: "Email and password are required." });
 
   try {
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ msg: "Invalid email or password." });
+    const user = await User.findOne({ email }).populate({
+      path: "rooms",
+      select: "name description aid createdBy",
+      populate: {
+        path: "createdBy",
+        select: "name email", // fields from the User who created the room
+      },
+    });
+    if (!user) return res.status(400).json({ msg: "No user found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
@@ -73,7 +78,7 @@ export const login = async (req, res) => {
     res
       .cookie("token", token, cookieOptions)
       .status(200)
-      .json({ userId: user._id, user: userWithoutPassword });
+      .json({ user: userWithoutPassword });
   } catch (err) {
     console.error("error in login Route" + err.message);
     res.status(500).json({ msg: "Server error" });
@@ -126,16 +131,22 @@ export const protectRoute = async (req, res, next) => {
 export const getUserDetails = async (req, res) => {
   try {
     // Find the user by userId which was added to the request object by the middleware
-    const user = await User.findById(req.user._id).select("-password"); // Exclude the password field
-
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .populate({
+        path: "rooms",
+        select: "name description aid createdBy",
+        populate: {
+          path: "createdBy",
+          select: "name email", // fields from the User who created the room
+        },
+      }); // Exclude the password field
     // If the user is not found, return a 404 error
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     // Return the user details in the response
     res.status(200).json({
-      userId: user._id,
-      fullName: user.fullName,
-      email: user.email,
+      user: user,
     });
   } catch (err) {
     console.error("Profile fetch error:", err.message);

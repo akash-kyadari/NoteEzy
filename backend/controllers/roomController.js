@@ -1,5 +1,5 @@
 import Room from "../models/roomModel.js";
-
+import User from "../models/userModel.js";
 // Utility to generate unique roomId
 async function generateUniqueRoomId(length = 6) {
   let roomId,
@@ -7,7 +7,7 @@ async function generateUniqueRoomId(length = 6) {
 
   while (exists) {
     roomId = Math.random()
-      .toString(36)
+      .toString(10)
       .substring(2, 2 + length);
     const room = await Room.findOne({ roomId });
     if (!room) exists = false;
@@ -17,10 +17,12 @@ async function generateUniqueRoomId(length = 6) {
 }
 
 export const createRoom = async (req, res) => {
-  const { fullName, _id } = req.user;
+  const { name, _id } = req.user;
   const userId = _id;
-  const roomName = req.query.name;
-  if (!userId || !fullName) {
+  //   console.log(req);
+  const roomName = req.body.name;
+  const description = req.body.description || "";
+  if (!userId || !name) {
     return res.status(400).json({ error: "Missing user info" });
   }
 
@@ -28,18 +30,23 @@ export const createRoom = async (req, res) => {
     const roomId = await generateUniqueRoomId();
 
     const newRoom = new Room({
-      roomName,
-      roomId,
-      admin: userId,
+      name: roomName,
+      description,
+      aid: roomId,
+      createdBy: userId,
     });
 
     await newRoom.save();
 
     // Correct populate usage
     await newRoom.populate([
-      { path: "participants", select: "-password -__v" },
-      { path: "admin", select: "-password -__v" },
+      { path: "members", select: "-password -__v" },
+      { path: "createdBy", select: "-password -__v" },
     ]);
+    // Add room to user's rooms array
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { rooms: newRoom._id },
+    });
 
     res.status(201).json(newRoom);
   } catch (err) {
@@ -48,17 +55,20 @@ export const createRoom = async (req, res) => {
   }
 };
 export const checkRoom = async (req, res) => {
+  //   console.log(req.params);
   try {
-    const room = await Room.findOne({ roomId: req.params.roomId })
-      .populate("participants", "-password -__v")
-      .populate("admin", "-password -__v");
+    const room = await Room.findOne({ aid: req.params.roomId })
+      .populate("members", "-password -__v")
+      .populate("createdBy", "-password -__v");
     if (room) {
+      const userId = req.user._id;
+      await User.findByIdAndUpdate(userId, {
+        $addToSet: { rooms: room._id },
+      });
+
       return res.status(200).json({
         valid: true,
-        roomId: room.roomId,
-        roomName: room.roomName,
-        admin: room.admin,
-        participants: room.participants,
+        ...room,
       });
     } else {
       return res.status(404).json({ valid: false, error: "Room not found" });

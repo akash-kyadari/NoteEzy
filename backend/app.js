@@ -20,9 +20,8 @@ const server = http.createServer(app); // ✅ Use http server
 
 // ✅ Setup CORS for frontend (Vite usually runs on 5173)
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: "http://localhost:3000",
   methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
   credentials: true,
 };
 app.use(cors(corsOptions));
@@ -36,7 +35,7 @@ app.post("/api/chat-ai", protectRoute, handler);
 // ✅ Setup Socket.IO and pass server instance
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST"],
   },
@@ -50,6 +49,6 @@ mongoose
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
 // ✅ Start server using `server.listen` instead of `app.listen`
-server.listen(3000, () => {
-  console.log("🚀 Server is running on port 3000");
+server.listen(5000, () => {
+  console.log("🚀 Server is running on port 5000");
 });
