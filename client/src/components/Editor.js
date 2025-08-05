@@ -22,6 +22,7 @@ import "./editor.css";
 import LogEditorStatePlugin from "./plugins/LogEditorStatePlugin";
 import SocketSyncPlugin from "./plugins/socketSyncPlugin";
 import { useRoomStore } from "@/stores/roomStore";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 function Placeholder() {
   return (
     <div className="editor-placeholder">
@@ -65,6 +66,7 @@ export default function Editor({ socket, roomId, userId }) {
             contentEditable={<ContentEditable className="editor-input" />}
             placeholder={<Placeholder />}
           />
+          <HistoryPlugin />
           <AutoFocusPlugin />
           <ListPlugin />
           <LinkPlugin />

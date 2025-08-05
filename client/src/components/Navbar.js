@@ -1,79 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
-import { useState } from "react";
-import Button from "@/components/Button";
+import Button from "./Button";
+import { LogOut, User } from "lucide-react";
 
 export default function Navbar() {
-  const { user, logout, loading } = useAuthStore();
-  const [loggingOut, setLoggingOut] = useState(false);
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    setLoggingOut(true);
-    try {
-      await logout();
-      router.push("/auth");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    } finally {
-      setLoggingOut(false);
-    }
-  };
+  const { user, logout } = useAuthStore();
 
   return (
-    <header className="h-16 w-full bg-white border-b border-gray-200 shadow-sm z-50 px-6 flex items-center justify-between">
-      <Link href="/" className="text-lg font-bold text-gray-800">
-        CollabCanvas
-      </Link>
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-100">
+      <div className="container mx-auto flex items-center justify-between p-4">
+        <Link href={user ? "/home" : "/"}>
+          <h1 className="text-2xl font-extrabold text-primary-dark">NoteZy</h1>
+        </Link>
 
-      <div className="flex items-center space-x-3">
-        {loading ? (
-          <span className="text-sm text-gray-400 animate-pulse">
-            Loading...
-          </span>
-        ) : user ? (
-          <>
-            <Button
-              onClick={() => router.push("/profile")}
-              variant="outline"
-              size="sm"
-              className="text-gray-700 border-gray-300 hover:bg-gray-100 transition"
-            >
-              Profile
-            </Button>
-            <Button
-              onClick={handleLogout}
-              disabled={loggingOut}
-              size="sm"
-              className="bg-gray-800 text-white hover:bg-gray-900 transition"
-            >
-              {loggingOut ? "Logging out..." : "Logout"}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Link href="/auth">
+        <div className="flex items-center gap-4">
+          {user ? (
+            <div className="flex items-center gap-4">
+              <Link href="/profile">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="hover:bg-gray-100"
+                >
+                  <User className="h-5 w-5 text-text-dark" />
+                </Button>
+              </Link>
               <Button
-                size="sm"
-                className="bg-gray-800 text-white hover:bg-gray-900 transition"
+                variant="ghost"
+                size="icon"
+                onClick={logout}
+                className="hover:bg-gray-100"
               >
-                Login
+                <LogOut className="h-5 w-5 text-text-dark" />
               </Button>
-            </Link>
-            <Link href="/auth">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-300 text-gray-700 hover:bg-gray-100 transition"
-              >
-                Sign Up
-              </Button>
-            </Link>
-          </>
-        )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/auth?mode=login">
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary"
+                >
+                  Login
+                </Button>
+              </Link>
+              <Link href="/auth?mode=signup">
+                <Button className="bg-blue-500 text-white hover:bg-blue-600">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

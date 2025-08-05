@@ -1,9 +1,14 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import mongoose from "mongoose";
 import http from "http";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
+import "./config/passport.js"; // Import the new passport configuration
 import { Server } from "socket.io"; // ✅ import Server from socket.io
 
 import roomRouter from "./routes/roomRoutes.js";
@@ -11,8 +16,6 @@ import authRouter from "./routes/authRoute.js";
 import socketHandler from "./sockets/socket.js";
 import { protectRoute } from "./controllers/authController.js";
 import handler from "./controllers/aichatController.js";
-
-dotenv.config();
 
 const app = express();
 
@@ -26,8 +29,29 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+import helmet from "helmet";
+import compression from "compression";
+
 app.use(express.json());
 app.use(cookieParser());
+
+// Production-ready middleware
+app.use(helmet());
+app.use(compression());
+
+// Session middleware for Passport
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_session_secret", // Use a strong secret from .env
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Use secure cookies in production
+  })
+);
+
+// Initialize Passport and session
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/api/room", protectRoute, roomRouter);
 app.use("/api/auth", authRouter);

@@ -1,9 +1,13 @@
 "use client";
+
 import { useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
+import Button from "@/components/Button";
+import toast from "react-hot-toast";
+
 export default function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,6 +27,17 @@ export default function AuthPage() {
   useEffect(() => {
     if (user) router.push("/home");
   }, [user, router]);
+
+  useEffect(() => {
+    const authError = searchParams.get("error");
+    if (authError === "google_auth_failed") {
+      toast.error(
+        "Google authentication failed. Please try again or use another method."
+      );
+      // Optionally, remove the error parameter from the URL
+      router.replace("/auth", undefined, { shallow: true });
+    }
+  }, [searchParams, router]);
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
@@ -50,50 +65,48 @@ export default function AuthPage() {
     const errs = validate();
     if (Object.keys(errs).length) return setErrors(errs);
 
+    const toastId = toast.loading(isLogin ? "Logging in..." : "Creating account...");
+
     if (isLogin) {
-      await login(form.email, form.password);
+      const success = await login(form.email, form.password);
+      if (success) {
+        toast.success("Logged in successfully!", { id: toastId });
+      } else {
+        toast.error(error || "Login failed. Please check your credentials.", { id: toastId });
+      }
     } else {
-      await signup(form.name, form.email, form.password);
+      const success = await signup(form.name, form.email, form.password);
+      if (success) {
+        toast.success("Account created successfully!", { id: toastId });
+      } else {
+        toast.error(error || "Signup failed. Please try again.", { id: toastId });
+      }
     }
   };
 
   const handleGoogleLogin = () => {
-    alert("Google Login not implemented");
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`;
   };
 
   return (
-    <div className="min-h-[85vh] bg-stone-50 flex items-center justify-center p-4">
-      <div className="grid md:grid-cols-2 shadow-xl bg-white rounded-xl max-w-5xl w-full overflow-hidden min-h-[600px]">
-        {/* Left Info */}
-        <div className="hidden md:flex flex-col justify-center bg-stone-100 p-10">
-          <h2 className="text-4xl font-bold text-stone-700 mb-4">
-            {isLogin ? "Welcome Back" : "Create Account"}
-          </h2>
-          <p className="text-stone-600 text-base">
-            {isLogin
-              ? "Log in to access your dashboard and notes."
-              : "Sign up and start your productivity journey with us."}
-          </p>
-        </div>
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
+          {isLogin ? "Welcome Back" : "Create an Account"}
+        </h2>
 
-        {/* Right Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-10 flex flex-col justify-center gap-5 w-full bg-white"
-        >
-          <h3 className="text-3xl font-semibold text-stone-800 mb-2 text-center">
-            {isLogin ? "Login" : "Sign Up"}
-          </h3>
-
+        <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin && (
             <div>
-              <label className="block text-sm text-stone-600 mb-1">Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name
+              </label>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
-                className="w-full border border-stone-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
               />
               {errors.name && (
                 <p className="text-xs text-red-500 mt-1">{errors.name}</p>
@@ -102,13 +115,15 @@ export default function AuthPage() {
           )}
 
           <div>
-            <label className="block text-sm text-stone-600 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-stone-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-stone-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
             />
             {errors.email && (
               <p className="text-xs text-red-500 mt-1">{errors.email}</p>
@@ -116,7 +131,7 @@ export default function AuthPage() {
           </div>
 
           <div>
-            <label className="block text-sm text-stone-600 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
             <input
@@ -124,7 +139,7 @@ export default function AuthPage() {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className="w-full border border-stone-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-stone-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
             />
             {errors.password && (
               <p className="text-xs text-red-500 mt-1">{errors.password}</p>
@@ -133,7 +148,7 @@ export default function AuthPage() {
 
           {!isLogin && (
             <div>
-              <label className="block text-sm text-stone-600 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Confirm Password
               </label>
               <input
@@ -141,7 +156,7 @@ export default function AuthPage() {
                 name="confirmPassword"
                 value={form.confirmPassword}
                 onChange={handleChange}
-                className="w-full border border-stone-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-stone-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
               />
               {errors.confirmPassword && (
                 <p className="text-xs text-red-500 mt-1">
@@ -151,37 +166,39 @@ export default function AuthPage() {
             </div>
           )}
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          <button
+          <Button
             type="submit"
             disabled={loading}
-            className="bg-stone-800 text-white py-2 rounded-md hover:bg-stone-900 transition font-semibold"
+            className="w-full py-3 text-lg bg-blue-500 text-white transition duration-200 ease-in-out"
           >
             {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
-          </button>
+          </Button>
 
-          <div className="flex items-center justify-center text-center">
-            <span className="text-stone-400 text-xs">────────</span>
-            <span className="px-2 text-stone-500 text-sm">OR</span>
-            <span className="text-stone-400 text-xs">────────</span>
+          <div className="relative flex items-center justify-center my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-3 bg-white text-gray-500">OR</span>
+            </div>
           </div>
 
-          <button
+          <Button
+            variant="outline"
             type="button"
             onClick={handleGoogleLogin}
-            className="border flex just justify-center items-center justify-items-center border-stone-300 rounded-md py-2 hover:bg-stone-100 transition"
+            className="w-full flex items-center justify-center gap-2 py-3 text-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition duration-200 ease-in-out"
           >
-            <FcGoogle className="w-5 h-5 mr-2" />
+            <FcGoogle className="w-6 h-6" />
             Continue with Google
-          </button>
+          </Button>
 
-          <p className="text-sm text-center text-stone-500 mt-2">
+          <p className="text-sm text-center text-gray-600 mt-6">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={toggleForm}
-              className="text-stone-700 underline font-medium"
+              className="font-medium text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out"
             >
               {isLogin ? "Sign up" : "Login"}
             </button>

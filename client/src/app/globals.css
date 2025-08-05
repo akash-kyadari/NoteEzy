@@ -1,9 +1,1 @@
 @import "tailwindcss";
-
-ul,
-menu {
-  list-style-type: unset;
-}
-ol {
-  list-style-type: decimal;
-}

@@ -1,5 +1,6 @@
 // File: stores/useAuthStore.js
 import { create } from "zustand";
+import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -25,6 +26,7 @@ export const useAuthStore = create((set) => ({
       if (!res.ok) throw new Error(data.msg || "Login failed");
       //   console.log(data);
       set({ user: data.user, status: "authenticated", loading: false });
+      return true;
     } catch (err) {
       console.error("Login Error:", err.message);
       set({
@@ -33,6 +35,7 @@ export const useAuthStore = create((set) => ({
         user: null,
         status: "unauthenticated",
       });
+      return false;
     }
   },
 
@@ -54,6 +57,7 @@ export const useAuthStore = create((set) => ({
       if (!res.ok) throw new Error(data.msg || "Signup failed");
 
       set({ user: data.user, status: "authenticated", loading: false });
+      return true;
     } catch (err) {
       console.error("Signup Error:", err.message);
       set({
@@ -62,6 +66,7 @@ export const useAuthStore = create((set) => ({
         user: null,
         status: "unauthenticated",
       });
+      return false;
     }
   },
 
@@ -93,13 +98,16 @@ export const useAuthStore = create((set) => ({
 
   // LOGOUT
   logout: async () => {
+    const toastId = toast.loading("Logging out...");
     try {
       await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + "/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
+      toast.success("Logged out successfully!", { id: toastId });
     } catch (err) {
       console.warn("Logout error:", err.message);
+      toast.error("Logout failed.", { id: toastId });
     } finally {
       set({
         user: null,

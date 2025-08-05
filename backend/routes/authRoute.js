@@ -6,17 +6,42 @@ import {
   protectRoute,
   getUserDetails,
 } from "../controllers/authController.js";
+import passport from "passport";
+
 const router = express.Router();
 
-// ✅ Signup with Cookie
+// Route for user signup
 router.post("/signup", signup);
 
-// ✅ Login with Cookie
+// Route for user login
 router.post("/login", login);
 
-// ✅ Logout — Clear Cookie
+// Route to initiate Google authentication
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+// Route for Google authentication callback
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: process.env.FRONTEND_URL + "/auth?error=google_auth_failed",
+    failureMessage: true,
+  }),
+  (req, res) => {
+    // On successful authentication, generate a token and redirect to the homepage
+    const token = req.user.generateAuthToken();
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    res.redirect(process.env.FRONTEND_URL + "/home");
+  }
+);
+
+// Route for user logout
 router.post("/logout", logout);
 
+// Route to get user details (protected)
 router.get("/me", protectRoute, getUserDetails);
 
 export default router;

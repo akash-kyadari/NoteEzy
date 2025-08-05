@@ -10,10 +10,11 @@ export default function socketHandlers(io) {
   }
 
   io.on("connection", (socket) => {
-    socket.on("join-room", async ({ roomId, userId }) => {
+    socket.on("join-room", async ({ roomId, userId, userName }) => {
       socket.join(roomId);
       socket.userId = userId;
       socket.roomId = roomId;
+      socket.userName = userName;
       let room = await Room.findOne({ aid: roomId })
         .populate("members", "name _id")
         .populate("createdBy", "name _id");

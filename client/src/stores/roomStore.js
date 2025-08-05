@@ -1,6 +1,7 @@
 // lib/stores/roomStore.ts
 import { create } from "zustand";
 import { useAuthStore } from "./authStore";
+import toast from "react-hot-toast";
 
 export const useRoomStore = create((set) => ({
   room: null,
@@ -16,6 +17,7 @@ export const useRoomStore = create((set) => ({
   setAdmin: (admin) => set({ admin }),
 
   createRoom: async ({ name, description }, router) => {
+    const toastId = toast.loading("Creating room...");
     set({ loading: true, error: null });
     try {
       const response = await fetch(
@@ -45,13 +47,15 @@ export const useRoomStore = create((set) => ({
         });
       }
       router.push(`/room/${newRoom.aid}`);
+      toast.success(`Room '${newRoom.name}' created successfully!`, { id: toastId });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message, { id: toastId });
       set({ loading: false, error: err.message });
     }
   },
 
   joinRoom: async (roomId, router) => {
+    const toastId = toast.loading("Joining room...");
     set({ loading: true, error: null });
     try {
       const response = await fetch(
@@ -97,8 +101,9 @@ export const useRoomStore = create((set) => ({
         });
       }
       router.push(`/room/${roomId}`);
+      toast.success(`Joined room successfully!`, { id: toastId });
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message, { id: toastId });
       set({ loading: false, error: err.message });
     }
   },
