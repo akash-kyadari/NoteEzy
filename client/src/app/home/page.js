@@ -112,7 +112,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center text-gray-500 bg-white/50">
-              <p className="text-lg">You haven't joined any rooms yet.</p>
+              <p className="text-lg">You haven&apos;t joined any rooms yet.</p>
             </div>
           )}
         </section>

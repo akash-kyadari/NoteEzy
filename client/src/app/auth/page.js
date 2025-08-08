@@ -194,7 +194,7 @@ export default function AuthPage() {
           </Button>
 
           <p className="text-sm text-center text-gray-600 mt-6">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            {isLogin ? "Don&apos;t have an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               onClick={toggleForm}
