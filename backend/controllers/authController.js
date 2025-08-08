@@ -13,6 +13,7 @@ export const generateToken = (userId) => {
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
+  sameSite: "None",
   maxAge: 24 * 60 * 60 * 1000, // 1 day
 };
 
@@ -108,7 +109,7 @@ export const logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "Strict",
+    sameSite: "None",
   });
   res.status(200).json({ msg: "Logged out" });
 };
