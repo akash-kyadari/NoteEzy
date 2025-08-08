@@ -23,7 +23,7 @@ const server = http.createServer(app); // ✅ Use http server
 
 // ✅ Setup CORS for frontend (Vite usually runs on 5173)
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.FRONTEND_URL,
   methods: ["GET", "POST"],
   credentials: true,
 };
@@ -35,6 +35,14 @@ import compression from "compression";
 app.use(express.json());
 app.use(cookieParser());
 
+// Request logger
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+  });
+}
+
 // Production-ready middleware
 app.use(helmet());
 app.use(compression());
@@ -42,7 +50,7 @@ app.use(compression());
 // Session middleware for Passport
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your_session_secret", // Use a strong secret from .env
+    secret: process.env.SESSION_SECRET, // Use a strong secret from .env
     resave: false,
     saveUninitialized: false,
     cookie: { secure: process.env.NODE_ENV === "production" }, // Use secure cookies in production
@@ -52,14 +60,16 @@ app.use(
 // Initialize Passport and session
 app.use(passport.initialize());
 app.use(passport.session());
-
+app.get("/dummy", (req, res) => {
+  res.json({ msg: "Api is working" });
+});
 app.use("/api/room", protectRoute, roomRouter);
 app.use("/api/auth", authRouter);
 app.post("/api/chat-ai", protectRoute, handler);
 // ✅ Setup Socket.IO and pass server instance
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
     methods: ["GET", "POST"],
   },
