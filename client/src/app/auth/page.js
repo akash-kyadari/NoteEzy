@@ -1,14 +1,14 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import Button from "@/components/Button";
 import toast from "react-hot-toast";
 
-export default function AuthPage() {
+function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode");
@@ -206,5 +206,13 @@ export default function AuthPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AuthPageWithSuspense() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthPage />
+    </Suspense>
   );
 }

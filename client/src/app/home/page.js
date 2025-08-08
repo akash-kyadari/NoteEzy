@@ -67,7 +67,7 @@ export default function HomePage() {
                 onChange={(e) => (createDataRef.current.description = e.target.value)}
               />
               <Button onClick={handleCreate} disabled={loading} className="w-full py-3 text-lg">
-                {loading ? "Creating..." : "Create Room"}
+                {loading ? 'Creating...' : 'Create Room'}
               </Button>
             </div>
           </div>
@@ -83,7 +83,7 @@ export default function HomePage() {
                 onChange={(e) => (roomCodeRef.current = e.target.value)}
               />
               <Button onClick={handleJoin} disabled={loading} className="w-full py-3 text-lg">
-                {loading ? "Joining..." : "Join Room"}
+                {loading ? 'Joining...' : 'Join Room'}
               </Button>
             </div>
           </div>
@@ -125,13 +125,13 @@ export default function HomePage() {
               <li key="how-to-1" className="flex items-start">
                 <span className="font-bold mr-3 text-primary">1.</span>
                 <span>
-                  <span className="font-semibold">Create a Room:</span> Give your room a name and an optional description, then click "Create Room."
+                  <span className="font-semibold">Create a Room:</span> Give your room a name and an optional description, then click 'Create Room'.
                 </span>
               </li>
               <li key="how-to-2" className="flex items-start">
                 <span className="font-bold mr-3 text-primary">2.</span>
                 <span>
-                  <span className="font-semibold">Join a Room:</span> Enter the room code you received and click "Join Room."
+                  <span className="font-semibold">Join a Room:</span> Enter the room code you received and click 'Join Room'.
                 </span>
               </li>
               <li key="how-to-3" className="flex items-start">
