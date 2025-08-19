@@ -25,7 +25,7 @@ export default function SocketSyncPlugin({ socket, roomId, userId }) {
       if (lastSentContent.current !== content) {
         socket.emit("note-change", { roomId, content });
         lastSentContent.current = content;
-        console.log("note-change emitted");
+        // console.log("note-change emitted");
       }
     });
 
@@ -49,7 +49,7 @@ export default function SocketSyncPlugin({ socket, roomId, userId }) {
           isRemoteUpdate.current = true; // prevent echo
           const newState = editor.parseEditorState(parsed);
           editor.setEditorState(newState);
-          console.log("Editor updated from socket");
+          //   console.log("Editor updated from socket");
         }
       } catch (err) {
         console.warn("Failed to set editor content from socket", err);

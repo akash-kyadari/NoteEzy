@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import sendEmail from "../utils/sendEmail.js";
 
 // Function to generate a JWT token
 export const generateToken = (userId) => {
@@ -45,22 +46,69 @@ export const signup = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      otp,
+      otpExpires,
+    });
+
     await newUser.save();
 
-    const token = generateToken(newUser._id);
-    const userWithoutPassword = newUser.toObject();
-    delete userWithoutPassword.password;
+    await sendEmail({
+      email,
+      subject: "OTP for email verification",
+      otp,
+    });
 
-    res
-      .cookie("token", token, cookieOptions)
-      .status(201)
-      .json({ userId: newUser._id, user: userWithoutPassword });
+    res.status(201).json({ msg: "OTP sent to your email." });
   } catch (err) {
     console.error("Error in signup route: ", err.message);
     res.status(500).json({ msg: "Server error" });
   }
 };
+
+export const verifyOTP = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ msg: "Email and OTP are required." });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ msg: "User not found." });
+    }
+
+    if (user.otp !== otp || user.otpExpires < Date.now()) {
+      return res.status(400).json({ msg: "Invalid or expired OTP." });
+    }
+
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    const token = generateToken(user._id);
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
+    res
+      .cookie("token", token, cookieOptions)
+      .status(200)
+      .json({ user: userWithoutPassword });
+  } catch (err) {
+    console.error("Error in verifyOTP route: ", err.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
+
 
 // Controller for user login
 export const login = async (req, res) => {

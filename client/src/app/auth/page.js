@@ -13,16 +13,18 @@ function AuthPage() {
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode");
   const [isLogin, setIsLogin] = useState(initialMode !== "signup");
+  const [showOtp, setShowOtp] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    otp: "",
   });
 
   const [errors, setErrors] = useState({});
-  const { login, signup, loading, error, user } = useAuthStore();
+  const { login, signup, loading, error, user, verifyOtp } = useAuthStore();
 
   useEffect(() => {
     if (user) router.push("/home");
@@ -41,8 +43,9 @@ function AuthPage() {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setForm({ name: "", email: "", password: "", confirmPassword: "" });
+    setForm({ name: "", email: "", password: "", confirmPassword: "", otp: "" });
     setErrors({});
+    setShowOtp(false);
   };
 
   const handleChange = (e) => {
@@ -77,10 +80,22 @@ function AuthPage() {
     } else {
       const success = await signup(form.name, form.email, form.password);
       if (success) {
-        toast.success("Account created successfully!", { id: toastId });
+        toast.success("OTP sent to your email!", { id: toastId });
+        setShowOtp(true);
       } else {
         toast.error(error || "Signup failed. Please try again.", { id: toastId });
       }
+    }
+  };
+
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    const toastId = toast.loading("Verifying OTP...");
+    const success = await verifyOtp(form.email, form.otp);
+    if (success) {
+      toast.success("Account verified successfully!", { id: toastId });
+    } else {
+      toast.error(error || "Invalid OTP. Please try again.", { id: toastId });
     }
   };
 
@@ -92,118 +107,142 @@ function AuthPage() {
     <div className="min-h-[calc(100vh-4rem)] bg-gray-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         <h2 className="text-3xl font-bold text-gray-800 text-center mb-8">
-          {isLogin ? "Welcome Back" : "Create an Account"}
+          {showOtp ? "Verify OTP" : isLogin ? "Welcome Back" : "Create an Account"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLogin && (
+        {showOtp ? (
+          <form onSubmit={handleOtpSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
+                Enter OTP
               </label>
               <input
                 type="text"
-                name="name"
-                value={form.name}
+                name="otp"
+                value={form.otp}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
               />
-              {errors.name && (
-                <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-              )}
             </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
-            />
-            {errors.email && (
-              <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 text-lg bg-blue-500 text-white transition duration-200 ease-in-out"
+            >
+              {loading ? "Verifying..." : "Verify OTP"}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+                )}
+              </div>
             )}
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
-            />
-            {errors.password && (
-              <p className="text-xs text-red-500 mt-1">{errors.password}</p>
-            )}
-          </div>
-
-          {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirm Password
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+              />
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
               </label>
               <input
                 type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
+                name="password"
+                value={form.password}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
               />
-              {errors.confirmPassword && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.confirmPassword}
-                </p>
+              {errors.password && (
+                <p className="text-xs text-red-500 mt-1">{errors.password}</p>
               )}
             </div>
-          )}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 text-lg bg-blue-500 text-white transition duration-200 ease-in-out"
-          >
-            {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
-          </Button>
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out"
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+            )}
 
-          <div className="relative flex items-center justify-center my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500">OR</span>
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-2 py-3 text-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition duration-200 ease-in-out"
-          >
-            <FcGoogle className="w-6 h-6" />
-            Continue with Google
-          </Button>
-
-          <p className="text-sm text-center text-gray-600 mt-6">
-            {isLogin ? "Don&apos;t have an account?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={toggleForm}
-              className="font-medium text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out"
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 text-lg bg-blue-500 text-white transition duration-200 ease-in-out"
             >
-              {isLogin ? "Sign up" : "Login"}
-            </button>
-          </p>
-        </form>
+              {loading ? "Please wait..." : isLogin ? "Login" : "Create Account"}
+            </Button>
+
+            <div className="relative flex items-center justify-center my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-3 bg-white text-gray-500">OR</span>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-2 py-3 text-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition duration-200 ease-in-out"
+            >
+              <FcGoogle className="w-6 h-6" />
+              Continue with Google
+            </Button>
+
+            <p className="text-sm text-center text-gray-600 mt-6">
+              {isLogin ? "Don&apos;t have an account?" : "Already have an account?"}{" "}
+              <button
+                type="button"
+                onClick={toggleForm}
+                className="font-medium text-blue-500 hover:text-blue-600 transition duration-200 ease-in-out"
+              >
+                {isLogin ? "Sign up" : "Login"}
+              </button>
+            </p>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import {
   logout,
   protectRoute,
   getUserDetails,
+  verifyOTP,
 } from "../controllers/authController.js";
 import passport from "passport";
 
@@ -15,6 +16,9 @@ router.post("/signup", signup);
 
 // Route for user login
 router.post("/login", login);
+
+// Route for verifying OTP
+router.post("/verify-otp", verifyOTP);
 
 // Route to initiate Google authentication
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));

@@ -37,6 +37,16 @@ const userSchema = new mongoose.Schema(
         ref: "Room", // Reference to Room schema
       },
     ],
+    otp: {
+      type: String,
+    },
+    otpExpires: {
+      type: Date,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

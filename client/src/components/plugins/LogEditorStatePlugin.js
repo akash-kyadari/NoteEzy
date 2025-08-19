@@ -10,7 +10,7 @@ export default function LogEditorStatePlugin() {
     const unregister = editor.registerUpdateListener(({ editorState }) => {
       // Logs full lexical editor state in JSON format
       const json = editorState.toJSON();
-      console.log("🧠 Lexical EditorState (JSON):", json);
+      //   console.log("🧠 Lexical EditorState (JSON):", json);
     });
 
     return () => unregister();

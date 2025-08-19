@@ -56,10 +56,41 @@ export const useAuthStore = create((set) => ({
       const data = await res.json();
       if (!res.ok) throw new Error(data.msg || "Signup failed");
 
-      set({ user: data.user, status: "authenticated", loading: false });
+      set({ loading: false });
       return true;
     } catch (err) {
       console.error("Signup Error:", err.message);
+      set({
+        error: err.message,
+        loading: false,
+        user: null,
+        status: "unauthenticated",
+      });
+      return false;
+    }
+  },
+
+  // VERIFY OTP
+  verifyOtp: async (email, otp) => {
+    set({ loading: true, error: null });
+    try {
+      const res = await fetch(
+        process.env.NEXT_PUBLIC_BACKEND_URL + "/api/auth/verify-otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, otp }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.msg || "OTP verification failed");
+
+      set({ user: data.user, status: "authenticated", loading: false });
+      return true;
+    } catch (err) {
+      console.error("OTP Verification Error:", err.message);
       set({
         error: err.message,
         loading: false,
@@ -84,7 +115,7 @@ export const useAuthStore = create((set) => ({
 
       if (!res.ok || !data.user)
         throw new Error(data.message || "Not authenticated");
-      console.log("Fetched user:", data.user);
+      //   console.log("Fetched user:", data.user);
       set({ user: data.user, status: "authenticated", loading: false });
     } catch (err) {
       set({

@@ -16,10 +16,10 @@ export default function AuthInit() {
   }, [fetchUser]);
 
   // Log separately to see when Zustand state changes
-  useEffect(() => {
-    console.log("Auth user updated:", user);
-    console.log("Auth status:", status);
-  }, [user, status]);
+  //   useEffect(() => {
+  //     console.log("Auth user updated:", user);
+  //     console.log("Auth status:", status);
+  //   }, [user, status]);
 
   return null;
 }
